@@ -1,6 +1,11 @@
 "use client";
 
+import Image from "next/image";
+
 const currentYear = new Date().getFullYear();
+
+// Asset path — /public/assets/logo.jpg
+const LOGO_SRC = "/assets/logo.jpg";
 
 export default function Footer() {
   return (
@@ -9,10 +14,32 @@ export default function Footer() {
         backgroundColor: "#3d3d3d",
         width: "100%",
         padding: "3rem 1rem 1.5rem",
-        textAlign: "center",
+        position: "relative",
       }}
     >
-      <div style={{ maxWidth: "600px", margin: "0 auto" }}>
+      {/* Logo — bottom left */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: "1.5rem",
+          left: "1.5rem",
+          width: "240px",
+          height: "150px",
+          overflow: "hidden",
+          borderRadius: "4px",
+        }}
+      >
+        <Image
+          src={LOGO_SRC}
+          alt="SRI Logo"
+          fill
+          style={{ objectFit: "contain" }}
+          sizes="240px"
+        />
+      </div>
+
+      {/* Centered content */}
+      <div style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center" }}>
         {/* Privacy Policy */}
         <a
           href="#privacy"
@@ -65,7 +92,7 @@ export default function Footer() {
             fontFamily: "Georgia, serif",
             fontSize: "0.75rem",
             color: "#bbbbbb",
-            marginBottom: "2rem",
+            marginBottom: "2.5rem",
           }}
         >
           +91.7893059116
@@ -73,7 +100,6 @@ export default function Footer() {
 
         {/* Divider */}
         <div style={{ borderTop: "1px solid #555555", paddingTop: "1.25rem" }}>
-          {/* Copyright */}
           <p
             style={{
               fontFamily: "Georgia, serif",

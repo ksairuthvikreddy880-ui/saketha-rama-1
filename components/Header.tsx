@@ -1,5 +1,9 @@
 "use client";
 
+import Image from "next/image";
+
+const LOGO_SRC = "/assets/logo.jpg";
+
 export default function Header() {
   return (
     <header
@@ -20,8 +24,32 @@ export default function Header() {
           alignItems: "center",
           justifyContent: "center",
           height: "52px",
+          position: "relative",
         }}
       >
+        {/* Logo — pinned to left edge of the full viewport */}
+        <div
+          style={{
+            position: "fixed",
+            left: "0",
+            top: "0",
+            width: "130px",
+            height: "52px",
+            overflow: "hidden",
+            zIndex: 51,
+          }}
+        >
+          <Image
+            src={LOGO_SRC}
+            alt="SRI Logo"
+            fill
+            style={{ objectFit: "contain" }}
+            sizes="130px"
+            priority
+          />
+        </div>
+
+        {/* Centered SRI text */}
         <a
           href="#home"
           style={{
