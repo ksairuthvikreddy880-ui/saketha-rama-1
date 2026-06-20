@@ -54,7 +54,7 @@ export default function Services() {
 
         {/* Outlined dashed-style button */}
         <motion.a
-          href="#about"
+          href="/services"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
