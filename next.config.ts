@@ -3,9 +3,9 @@ import path from "path";
 
 const nextConfig: NextConfig = {
   images: {
-    // Add external hostnames here if you ever use remote images
-    // remotePatterns: [{ hostname: "example.com" }],
+    dangerouslyAllowSVG: true,
   },
+  serverExternalPackages: ["mongoose", "bcryptjs", "nodemailer"],
   turbopack: {
     root: path.resolve(__dirname),
   },

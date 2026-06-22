@@ -67,6 +67,7 @@ export default function Newsletter() {
             <div
               style={{
                 display: "flex",
+                flexWrap: "wrap",
                 gap: "0",
                 maxWidth: "520px",
                 margin: "0 auto",
@@ -74,7 +75,7 @@ export default function Newsletter() {
               }}
             >
               {/* Email input */}
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: "1 1 200px" }}>
                 <label htmlFor="nl-email" style={{ display: "none" }}>Email</label>
                 <input
                   id="nl-email"
@@ -85,6 +86,7 @@ export default function Newsletter() {
                   style={{
                     width: "100%",
                     height: "100%",
+                    minHeight: "44px",
                     border: "1px solid #cccccc",
                     borderRight: "none",
                     outline: "none",
@@ -105,7 +107,7 @@ export default function Newsletter() {
                 style={{
                   border: "1px solid #333333",
                   backgroundColor: "transparent",
-                  padding: "0.65rem 1.5rem",
+                  padding: "0.65rem 1.25rem",
                   fontFamily: "Georgia, serif",
                   fontSize: "0.8rem",
                   letterSpacing: "0.15em",
@@ -115,8 +117,9 @@ export default function Newsletter() {
                   whiteSpace: "nowrap",
                   display: "flex",
                   alignItems: "center",
-                  gap: "0.6rem",
+                  gap: "0.5rem",
                   transition: "background-color 0.2s",
+                  flex: "0 0 auto",
                 }}
               >
                 <span style={{ fontSize: "1rem" }}>—</span>

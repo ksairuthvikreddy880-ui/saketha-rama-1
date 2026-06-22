@@ -5,6 +5,7 @@ export interface IUser {
   name: string;
   email: string;
   password: string;
+  isAdmin?: boolean; // Flag to identify admin users
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -26,6 +27,10 @@ const UserSchema = new Schema<IUser>(
     password: {
       type: String,
       required: [true, "Password is required"],
+    },
+    isAdmin: {
+      type: Boolean,
+      default: false, // Regular users are not admin by default
     },
   },
   {

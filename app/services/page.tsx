@@ -75,12 +75,12 @@ export default function ServicesPage() {
     <>
       {/* ── Header ── */}
       <header style={{ backgroundColor: "#4a4a4a", width: "100%", position: "sticky" as const, top: 0, zIndex: 50 }}>
-        <div style={{ maxWidth: "1024px", margin: "0 auto", padding: "0 1.5rem", display: "flex", alignItems: "center", justifyContent: "center", height: "52px" }}>
-          <Link href="/" style={{ display: "flex", alignItems: "center", gap: "0.75rem", textDecoration: "none" }}>
-            <div style={{ width: "52px", height: "52px", position: "relative", overflow: "hidden", flexShrink: 0 }}>
-              <Image src={LOGO_SRC} alt="SRI Logo" fill style={{ objectFit: "contain" }} sizes="52px" priority />
+        <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", height: "52px" }}>
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: "0.6rem", textDecoration: "none", minWidth: 0, flex: 1 }}>
+            <div style={{ width: "44px", height: "44px", position: "relative", overflow: "hidden", flexShrink: 0 }}>
+              <Image src={LOGO_SRC} alt="SRI Logo" fill style={{ objectFit: "contain" }} sizes="44px" priority />
             </div>
-            <span style={{ ...textStyle, color: "#ffffff", fontSize: "1.1rem", letterSpacing: "0.2em", fontWeight: "400", textTransform: "uppercase" as const, whiteSpace: "nowrap" as const }}>
+            <span style={{ ...textStyle, color: "#ffffff", fontSize: "clamp(0.65rem, 2vw, 1rem)", letterSpacing: "0.1em", fontWeight: "400", textTransform: "uppercase" as const, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
               Sri Saketha Rama Innovations
             </span>
           </Link>
