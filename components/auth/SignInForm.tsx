@@ -40,25 +40,35 @@ export default function SignInForm() {
     setLoading(true);
     setErrors({});
 
-    // Simulate API call delay
-    setTimeout(() => {
-      // Get stored users from localStorage
-      const storedUsers = localStorage.getItem("sri_users");
-      const users = storedUsers ? JSON.parse(storedUsers) : [];
+    try {
+      const response = await fetch("/api/auth/signin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password,
+        }),
+      });
 
-      // Check if user exists with matching password
-      const user = users.find((u: any) => u.email === form.email && u.password === form.password);
+      const data = await response.json();
 
-      if (user) {
-        // Store current user session
-        sessionStorage.setItem("user_auth", "true");
-        sessionStorage.setItem("user_email", form.email);
-        router.push("/");
-      } else {
-        setErrors({ general: "Invalid email or password" });
+      if (!response.ok) {
+        setErrors({ general: data.error || "Failed to sign in" });
         setLoading(false);
+        return;
       }
-    }, 500);
+
+      // Store user session
+      sessionStorage.setItem("user_auth", "true");
+      sessionStorage.setItem("user_email", form.email);
+      sessionStorage.setItem("user_name", data.user.name);
+      
+      // Redirect to homepage
+      router.push("/");
+    } catch (error) {
+      setErrors({ general: "Network error. Please try again." });
+      setLoading(false);
+    }
   };
 
   return (

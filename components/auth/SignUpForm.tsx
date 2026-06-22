@@ -43,36 +43,32 @@ export default function SignUpForm() {
     setLoading(true);
     setErrors({});
 
-    // Simulate API call delay
-    setTimeout(() => {
-      // Get existing users from localStorage
-      const storedUsers = localStorage.getItem("sri_users");
-      const users = storedUsers ? JSON.parse(storedUsers) : [];
+    try {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          password: form.password,
+        }),
+      });
 
-      // Check if email already exists
-      const existingUser = users.find((u: any) => u.email === form.email);
-      if (existingUser) {
-        setErrors({ general: "An account with this email already exists." });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErrors({ general: data.error || "Failed to create account" });
         setLoading(false);
         return;
       }
 
-      // Add new user
-      users.push({
-        id: Date.now().toString(),
-        name: form.name,
-        email: form.email,
-        password: form.password, // In production, this should be hashed
-        createdAt: new Date().toISOString(),
-      });
-
-      // Save to localStorage
-      localStorage.setItem("sri_users", JSON.stringify(users));
-
-      // Show success
+      // Success
       setSuccess(true);
       setLoading(false);
-    }, 500);
+    } catch (error) {
+      setErrors({ general: "Network error. Please try again." });
+      setLoading(false);
+    }
   };
 
   if (success) {
