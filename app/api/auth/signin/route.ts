@@ -3,6 +3,11 @@ import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
 
+// Admin credentials
+const ADMIN_EMAIL = "saketharamainnovations@gmail.com";
+const ADMIN_PASSWORD = "arohan@1414";
+const ADMIN_UID = "saketharamainnovations";
+
 export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json();
@@ -15,7 +20,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Connect to database
+    // Check for admin credentials first
+    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+      return NextResponse.json(
+        {
+          success: true,
+          message: "Admin sign in successful",
+          isAdmin: true,
+          user: {
+            id: ADMIN_UID,
+            name: "Admin",
+            email: ADMIN_EMAIL,
+          },
+        },
+        { status: 200 }
+      );
+    }
+
+    // Connect to database for regular users
     await connectDB();
 
     // Find user
@@ -40,6 +62,7 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         message: "Sign in successful",
+        isAdmin: false,
         user: {
           id: user._id,
           name: user.name,

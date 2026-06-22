@@ -224,32 +224,6 @@ export default function Header() {
             // Sign In/Sign Up buttons
             <>
               <a
-                href="/admin-login"
-                style={{
-                  fontFamily: "Georgia, serif",
-                  fontSize: "0.8rem",
-                  letterSpacing: "0.08em",
-                  color: "#fbbf24",
-                  textDecoration: "none",
-                  padding: "0.35rem 0.9rem",
-                  border: "1px solid #fbbf24",
-                  borderRadius: "4px",
-                  transition: "all 0.2s",
-                  whiteSpace: "nowrap",
-                  display: "inline-block",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLAnchorElement).style.backgroundColor = "#fbbf24";
-                  (e.currentTarget as HTMLAnchorElement).style.color = "#111827";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLAnchorElement).style.backgroundColor = "transparent";
-                  (e.currentTarget as HTMLAnchorElement).style.color = "#fbbf24";
-                }}
-              >
-                Admin
-              </a>
-              <a
                 href="/auth"
                 style={{
                   fontFamily: "Georgia, serif",

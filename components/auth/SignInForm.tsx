@@ -58,13 +58,20 @@ export default function SignInForm() {
         return;
       }
 
-      // Store user session
-      sessionStorage.setItem("user_auth", "true");
-      sessionStorage.setItem("user_email", form.email);
-      sessionStorage.setItem("user_name", data.user.name);
-      
-      // Redirect to homepage
-      router.push("/");
+      // Check if admin login
+      if (data.isAdmin) {
+        // Store admin session
+        sessionStorage.setItem("admin_auth", "true");
+        // Redirect to admin panel
+        router.push("/admin");
+      } else {
+        // Store regular user session
+        sessionStorage.setItem("user_auth", "true");
+        sessionStorage.setItem("user_email", form.email);
+        sessionStorage.setItem("user_name", data.user.name);
+        // Redirect to homepage
+        router.push("/");
+      }
     } catch (error) {
       setErrors({ general: "Network error. Please try again." });
       setLoading(false);
