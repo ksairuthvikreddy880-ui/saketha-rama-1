@@ -7,8 +7,11 @@ export async function POST(request: NextRequest) {
   try {
     const { name, email, password } = await request.json();
 
+    console.log("Signup attempt:", { name, email });
+
     // Validate input
     if (!name || !email || !password) {
+      console.log("Validation failed: Missing fields");
       return NextResponse.json(
         { error: "All fields are required" },
         { status: 400 }
@@ -16,11 +19,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Connect to database
+    console.log("Connecting to MongoDB...");
     await connectDB();
+    console.log("MongoDB connected!");
 
     // Check if user already exists
+    console.log("Checking for existing user...");
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
+      console.log("User already exists");
       return NextResponse.json(
         { error: "An account with this email already exists" },
         { status: 409 }
@@ -28,14 +35,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash password
+    console.log("Hashing password...");
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create new user
+    console.log("Creating user...");
     const user = await User.create({
       name,
       email: email.toLowerCase(),
       password: hashedPassword,
     });
+    console.log("User created successfully:", user._id);
 
     return NextResponse.json(
       {
@@ -51,6 +61,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (error: any) {
     console.error("Signup error:", error);
+    console.error("Error stack:", error.stack);
     return NextResponse.json(
       { error: "Failed to create account. Please try again." },
       { status: 500 }
