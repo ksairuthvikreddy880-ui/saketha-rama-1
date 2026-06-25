@@ -96,8 +96,6 @@ export default function Contact() {
         }),
       });
     } catch {
-      // Non-blocking
-    }
       // Non-blocking — still open email client even if DB save fails
     }
 
@@ -177,7 +175,9 @@ export default function Contact() {
                 Attach Files
               </label>
               <input id="attach" type="file" style={{ display: "none" }} onChange={handleFile} accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.txt" />
-              <span style={{ fontFamily: "Georgia, serif", fontSize: "0.875rem", color: "#888888" }}>Attachments ({form.file ? 1 : 0})</span>
+              <span style={{ fontFamily: "Georgia, serif", fontSize: "0.875rem", color: form.file ? "#333" : "#888888" }}>
+                {form.file ? `📎 ${form.file.name}` : "Attachments (0)"}
+              </span>
             </div>
 
             {/* Server error */}
@@ -222,7 +222,7 @@ export default function Contact() {
           <div style={{ textAlign: "center" }}>
             <p style={{ fontFamily: "Georgia, serif", fontSize: "1rem", fontWeight: "700", color: "#222222", marginBottom: "0.75rem" }}>SRI</p>
             <p style={{ fontFamily: "Georgia, serif", fontSize: "0.875rem", color: "#555555", lineHeight: "1.7" }}>
-              plot no 118, Phase 2, Kavuri Hills, Madhopur,<br />Hyderabad, Telangana, India
+              Plot No 118, Phase 2, Kavuri Hills, Madhopur,<br />Hyderabad, Telangana, India
             </p>
             <p style={{ fontFamily: "Georgia, serif", fontSize: "0.875rem", color: "#555555", marginTop: "0.75rem" }}>+91.7893059116</p>
           </div>
