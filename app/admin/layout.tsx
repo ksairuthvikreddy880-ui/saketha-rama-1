@@ -9,6 +9,7 @@ const menuItems = [
   { label: "Dashboard", href: "/admin" },
   { label: "Add Blog", href: "/admin/blogs/add" },
   { label: "Manage Blogs", href: "/admin/blogs" },
+  { label: "Mails", href: "/admin/mails" },
   { label: "Settings", href: "/admin/settings" },
 ];
 

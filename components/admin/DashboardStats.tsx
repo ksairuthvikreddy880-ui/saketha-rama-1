@@ -8,23 +8,20 @@ interface Stats {
   published: number;
   drafts: number;
   totalUsers: number;
+  totalMails: number;
+  unreadMails: number;
 }
 
 export default function DashboardStats() {
   const [stats, setStats] = useState<Stats>({
-    totalBlogs: 0,
-    published: 0,
-    drafts: 0,
-    totalUsers: 0,
+    totalBlogs: 0, published: 0, drafts: 0, totalUsers: 0, totalMails: 0, unreadMails: 0,
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/admin/stats")
       .then((r) => r.json())
-      .then((data) => {
-        if (data.success) setStats(data.stats);
-      })
+      .then((data) => { if (data.success) setStats(data.stats); })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
@@ -34,6 +31,7 @@ export default function DashboardStats() {
     { label: "Published", value: stats.published },
     { label: "Drafts", value: stats.drafts },
     { label: "Registered Users", value: stats.totalUsers },
+    { label: "Total Mails", value: stats.totalMails, badge: stats.unreadMails > 0 ? `${stats.unreadMails} unread` : null },
   ];
 
   return (
@@ -80,6 +78,11 @@ export default function DashboardStats() {
           }}>
             {stat.label}
           </p>
+          {(stat as any).badge && (
+            <p style={{ fontFamily: "system-ui", fontSize: "0.75rem", color: "#EF4444", margin: "0.3rem 0 0 0", fontWeight: "500" }}>
+              {(stat as any).badge}
+            </p>
+          )}
         </motion.div>
       ))}
     </div>

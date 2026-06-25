@@ -66,18 +66,28 @@ export default function Contact() {
     setSending(true);
     setServerError("");
 
-    // Build mailto link — sends from user's own email to company inbox
-    // No SMTP credentials needed
+    try {
+      // Save to MongoDB mails collection
+      await fetch("/api/mails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          project: form.project,
+        }),
+      });
+    } catch {
+      // Non-blocking — still open email client even if DB save fails
+    }
+
+    // Open user's email client pre-filled to company inbox
     const subject = encodeURIComponent(`New Enquiry from ${form.name}`);
     const body = encodeURIComponent(
       `Name: ${form.name}\nEmail: ${form.email}\n\nProject Details:\n${form.project}`
     );
-    const mailtoLink = `mailto:saketharamainnovations@gmail.com?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:saketharamainnovations@gmail.com?subject=${subject}&body=${body}`;
 
-    // Open user's email client
-    window.location.href = mailtoLink;
-
-    // Show success after a short delay
     setTimeout(() => {
       setSubmitted(true);
       setSending(false);
