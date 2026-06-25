@@ -41,6 +41,8 @@ const inputStyle: React.CSSProperties = {
   boxSizing: "border-box",
 };
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
 export default function Contact() {
   const [form, setForm] = useState<FormState>({ name: "", email: "", project: "", file: null });
   const [errors, setErrors] = useState<Errors>({});
@@ -55,7 +57,14 @@ export default function Contact() {
   };
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm((p) => ({ ...p, file: e.target.files?.[0] ?? null }));
+    const file = e.target.files?.[0] ?? null;
+    if (file && file.size > MAX_FILE_SIZE) {
+      setServerError("File too large. Max size is 5MB.");
+      e.target.value = "";
+      return;
+    }
+    setServerError("");
+    setForm((p) => ({ ...p, file }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -76,19 +85,21 @@ export default function Contact() {
         attachmentBase64 = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onloadend = () => resolve(reader.result as string);
-          reader.onerror = reject;
+          reader.onerror = () => reject(new Error("Failed to read file"));
           reader.readAsDataURL(form.file!);
         });
         attachmentName = form.file.name;
         attachmentType = form.file.type;
       } catch {
-        // File read failed — continue without attachment
+        setServerError("Failed to read file. Please try again.");
+        setSending(false);
+        return;
       }
     }
 
-    // Save to MongoDB FIRST — wait for it to complete before redirecting
+    // Save everything to MongoDB — no mailto, no redirect
     try {
-      await fetch("/api/mails", {
+      const res = await fetch("/api/mails", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -100,22 +111,21 @@ export default function Contact() {
           attachmentType,
         }),
       });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setServerError(data.error || "Failed to send. Please try again.");
+        setSending(false);
+        return;
+      }
+
+      // Success
+      setSubmitted(true);
+      setSending(false);
     } catch {
-      // Non-blocking if DB save fails
+      setServerError("Network error. Please check your connection and try again.");
+      setSending(false);
     }
-
-    // Show success state
-    setSubmitted(true);
-    setSending(false);
-
-    // Open email client AFTER DB save is done
-    const subject = encodeURIComponent(`New Enquiry from ${form.name}`);
-    const body = encodeURIComponent(
-      `Name: ${form.name}\nEmail: ${form.email}\n\nProject Details:\n${form.project}`
-    );
-    setTimeout(() => {
-      window.location.href = `mailto:saketharamainnovations@gmail.com?subject=${subject}&body=${body}`;
-    }, 300);
   };
 
   return (
@@ -140,14 +150,17 @@ export default function Contact() {
         </p>
 
         {submitted ? (
-          <div style={{ textAlign: "center", padding: "2rem 0" }}>
+          <div style={{ textAlign: "center", padding: "2.5rem 0" }}>
+            <div style={{ fontSize: "2rem", marginBottom: "1rem" }}>✓</div>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: "1.1rem", fontWeight: "700", color: "#222", marginBottom: "0.5rem" }}>
+              Message Sent!
+            </p>
             <p style={{ fontFamily: "Georgia, serif", color: "#555", lineHeight: "1.7" }}>
-              Your email client has been opened with the details pre-filled.<br />
-              Please send the email to complete your enquiry.
+              Thank you for reaching out. We have received your message and will get back to you soon.
             </p>
             <button
               onClick={() => { setSubmitted(false); setForm({ name: "", email: "", project: "", file: null }); }}
-              style={{ marginTop: "1rem", background: "none", border: "none", fontFamily: "Georgia, serif", fontSize: "0.875rem", color: "#4a9ea1", cursor: "pointer", textDecoration: "underline" }}
+              style={{ marginTop: "1.5rem", background: "none", border: "none", fontFamily: "Georgia, serif", fontSize: "0.875rem", color: "#4a9ea1", cursor: "pointer", textDecoration: "underline" }}
             >
               Send another message
             </button>
@@ -173,16 +186,22 @@ export default function Contact() {
             </div>
 
             {/* File attach */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #cccccc", paddingBottom: "0.5rem", marginBottom: "2rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #cccccc", paddingBottom: "0.5rem", marginBottom: "2rem", flexWrap: "wrap", gap: "0.5rem" }}>
               <label htmlFor="attach" style={{ display: "flex", alignItems: "center", gap: "0.4rem", cursor: "pointer", fontFamily: "Georgia, serif", fontSize: "0.875rem", color: "#555555" }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
                 </svg>
-                Attach Files
+                Attach File
               </label>
-              <input id="attach" type="file" style={{ display: "none" }} onChange={handleFile} accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.txt" />
+              <input
+                id="attach"
+                type="file"
+                style={{ display: "none" }}
+                onChange={handleFile}
+                accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.gif,.webp,.txt,.zip,.xls,.xlsx,.ppt,.pptx"
+              />
               <span style={{ fontFamily: "Georgia, serif", fontSize: "0.875rem", color: form.file ? "#333" : "#888888" }}>
-                {form.file ? `📎 ${form.file.name}` : "Attachments (0)"}
+                {form.file ? `📎 ${form.file.name} (${(form.file.size / 1024).toFixed(0)} KB)` : "No file chosen"}
               </span>
             </div>
 
@@ -208,9 +227,7 @@ export default function Contact() {
             </div>
 
             <p style={{ textAlign: "center", fontFamily: "Georgia, serif", fontSize: "0.75rem", color: "#888888", marginTop: "0.5rem" }}>
-              This site is protected by reCAPTCHA and the Google{" "}
-              <a href="#privacy" style={{ color: "#4a9ea1", textDecoration: "none" }}>Privacy Policy</a> and{" "}
-              <a href="#terms" style={{ color: "#4a9ea1", textDecoration: "none" }}>Terms of Service</a> apply.
+              Supported: PDF, DOC, DOCX, PNG, JPG, GIF, WEBP, TXT, ZIP, XLS, PPT (max 5MB)
             </p>
           </form>
         )}
