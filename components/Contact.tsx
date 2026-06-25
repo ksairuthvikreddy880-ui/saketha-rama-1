@@ -66,28 +66,22 @@ export default function Contact() {
     setSending(true);
     setServerError("");
 
-    try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          project: form.project,
-        }),
-      });
+    // Build mailto link — sends from user's own email to company inbox
+    // No SMTP credentials needed
+    const subject = encodeURIComponent(`New Enquiry from ${form.name}`);
+    const body = encodeURIComponent(
+      `Name: ${form.name}\nEmail: ${form.email}\n\nProject Details:\n${form.project}`
+    );
+    const mailtoLink = `mailto:saketharamainnovations@gmail.com?subject=${subject}&body=${body}`;
 
-      if (res.ok) {
-        setSubmitted(true);
-      } else {
-        const data = await res.json();
-        setServerError(data.error || "Something went wrong. Please try again.");
-      }
-    } catch {
-      setServerError("Network error. Please check your connection and try again.");
-    } finally {
+    // Open user's email client
+    window.location.href = mailtoLink;
+
+    // Show success after a short delay
+    setTimeout(() => {
+      setSubmitted(true);
       setSending(false);
-    }
+    }, 500);
   };
 
   return (
@@ -114,8 +108,8 @@ export default function Contact() {
         {submitted ? (
           <div style={{ textAlign: "center", padding: "2rem 0" }}>
             <p style={{ fontFamily: "Georgia, serif", color: "#555", lineHeight: "1.7" }}>
-              Thank you! Your message has been sent to our team.<br />
-              We&apos;ve also sent a confirmation to <strong>{form.email}</strong>.
+              Your email client has been opened with the details pre-filled.<br />
+              Please send the email to complete your enquiry.
             </p>
             <button
               onClick={() => { setSubmitted(false); setForm({ name: "", email: "", project: "", file: null }); }}
