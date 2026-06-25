@@ -67,7 +67,22 @@ export default function Contact() {
     setServerError("");
 
     try {
-      // Save to MongoDB mails collection
+      // Convert file to base64 if attached
+      let attachmentBase64 = "";
+      let attachmentName = "";
+      let attachmentType = "";
+
+      if (form.file) {
+        attachmentBase64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(form.file!);
+        });
+        attachmentName = form.file.name;
+        attachmentType = form.file.type;
+      }
+
+      // Save to MongoDB mails collection (with attachment)
       await fetch("/api/mails", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -75,9 +90,14 @@ export default function Contact() {
           name: form.name,
           email: form.email,
           project: form.project,
+          attachmentBase64,
+          attachmentName,
+          attachmentType,
         }),
       });
     } catch {
+      // Non-blocking
+    }
       // Non-blocking — still open email client even if DB save fails
     }
 

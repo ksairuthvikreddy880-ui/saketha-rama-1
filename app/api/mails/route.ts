@@ -17,13 +17,20 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     await connectDB();
-    const { name, email, project } = await request.json();
+    const { name, email, project, attachmentBase64, attachmentName, attachmentType } = await request.json();
 
     if (!name || !email || !project) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 
-    const mail = await Mail.create({ name, email, project });
+    const mail = await Mail.create({
+      name,
+      email,
+      project,
+      attachmentBase64: attachmentBase64 || "",
+      attachmentName: attachmentName || "",
+      attachmentType: attachmentType || "",
+    });
     return NextResponse.json({ success: true, mail }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ error: "Failed to save mail" }, { status: 500 });

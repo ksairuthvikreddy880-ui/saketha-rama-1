@@ -7,6 +7,9 @@ interface Mail {
   name: string;
   email: string;
   project: string;
+  attachmentBase64?: string;
+  attachmentName?: string;
+  attachmentType?: string;
   read: boolean;
   createdAt: string;
 }
@@ -106,6 +109,11 @@ export default function MailsPage() {
                       <p style={{ fontFamily: "system-ui", fontSize: "0.75rem", color: "#9CA3AF", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {mail.project.slice(0, 60)}{mail.project.length > 60 ? "..." : ""}
                       </p>
+                      {mail.attachmentName && (
+                        <p style={{ fontFamily: "system-ui", fontSize: "0.7rem", color: "#6B7280", margin: "0.2rem 0 0 0" }}>
+                          📎 {mail.attachmentName}
+                        </p>
+                      )}
                     </div>
                     <div style={{ flexShrink: 0, textAlign: "right" }}>
                       <p style={{ fontFamily: "system-ui", fontSize: "0.7rem", color: "#9CA3AF", margin: "0 0 0.4rem 0", whiteSpace: "nowrap" }}>
@@ -172,6 +180,48 @@ export default function MailsPage() {
                       {selected.project}
                     </p>
                   </div>
+
+                  {/* Attachment */}
+                  {selected.attachmentBase64 && selected.attachmentName && (
+                    <div style={{ marginTop: "1.5rem", paddingTop: "1.25rem", borderTop: "1px solid #E5E7EB" }}>
+                      <p style={{ fontFamily: "system-ui", fontSize: "0.75rem", fontWeight: "600", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.75rem" }}>
+                        Attachment
+                      </p>
+
+                      {/* Image preview */}
+                      {selected.attachmentType?.startsWith("image/") ? (
+                        <div>
+                          <img
+                            src={selected.attachmentBase64}
+                            alt={selected.attachmentName}
+                            style={{ maxWidth: "100%", maxHeight: "400px", borderRadius: "8px", border: "1px solid #E5E7EB", objectFit: "contain" }}
+                          />
+                          <div style={{ marginTop: "0.75rem" }}>
+                            <a
+                              href={selected.attachmentBase64}
+                              download={selected.attachmentName}
+                              style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", padding: "0.4rem 0.875rem", backgroundColor: "#F8FAFC", border: "1px solid #E5E7EB", borderRadius: "6px", fontFamily: "system-ui", fontSize: "0.8rem", color: "#374151", textDecoration: "none" }}
+                            >
+                              ↓ Download {selected.attachmentName}
+                            </a>
+                          </div>
+                        </div>
+                      ) : (
+                        /* Non-image file — download link */
+                        <a
+                          href={selected.attachmentBase64}
+                          download={selected.attachmentName}
+                          style={{ display: "inline-flex", alignItems: "center", gap: "0.6rem", padding: "0.75rem 1.25rem", backgroundColor: "#F8FAFC", border: "1px solid #E5E7EB", borderRadius: "8px", fontFamily: "system-ui", fontSize: "0.875rem", color: "#111827", textDecoration: "none" }}
+                        >
+                          <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                          </svg>
+                          {selected.attachmentName}
+                          <span style={{ color: "#6B7280", fontSize: "0.75rem" }}>— click to download</span>
+                        </a>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
