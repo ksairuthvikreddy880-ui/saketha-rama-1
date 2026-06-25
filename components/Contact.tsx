@@ -66,23 +66,28 @@ export default function Contact() {
     setSending(true);
     setServerError("");
 
-    try {
-      // Convert file to base64 if attached
-      let attachmentBase64 = "";
-      let attachmentName = "";
-      let attachmentType = "";
+    // Convert file to base64 if attached
+    let attachmentBase64 = "";
+    let attachmentName = "";
+    let attachmentType = "";
 
-      if (form.file) {
-        attachmentBase64 = await new Promise<string>((resolve) => {
+    if (form.file) {
+      try {
+        attachmentBase64 = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
           reader.readAsDataURL(form.file!);
         });
         attachmentName = form.file.name;
         attachmentType = form.file.type;
+      } catch {
+        // File read failed — continue without attachment
       }
+    }
 
-      // Save to MongoDB mails collection (with attachment)
+    // Save to MongoDB FIRST — wait for it to complete before redirecting
+    try {
       await fetch("/api/mails", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -96,20 +101,21 @@ export default function Contact() {
         }),
       });
     } catch {
-      // Non-blocking — still open email client even if DB save fails
+      // Non-blocking if DB save fails
     }
 
-    // Open user's email client pre-filled to company inbox
+    // Show success state
+    setSubmitted(true);
+    setSending(false);
+
+    // Open email client AFTER DB save is done
     const subject = encodeURIComponent(`New Enquiry from ${form.name}`);
     const body = encodeURIComponent(
       `Name: ${form.name}\nEmail: ${form.email}\n\nProject Details:\n${form.project}`
     );
-    window.location.href = `mailto:saketharamainnovations@gmail.com?subject=${subject}&body=${body}`;
-
     setTimeout(() => {
-      setSubmitted(true);
-      setSending(false);
-    }, 500);
+      window.location.href = `mailto:saketharamainnovations@gmail.com?subject=${subject}&body=${body}`;
+    }, 300);
   };
 
   return (
