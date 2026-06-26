@@ -5,40 +5,24 @@ export interface IUser {
   name: string;
   email: string;
   password: string;
-  isAdmin?: boolean; // Flag to identify admin users
+  isAdmin?: boolean;
+  resetCode?: string;        // 6-digit OTP
+  resetCodeExpiry?: Date;    // expires in 15 minutes
   createdAt?: Date;
   updatedAt?: Date;
 }
 
 const UserSchema = new Schema<IUser>(
   {
-    name: {
-      type: String,
-      required: [true, "Name is required"],
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: [true, "Email is required"],
-      unique: true,
-      lowercase: true,
-      trim: true,
-    },
-    password: {
-      type: String,
-      required: [true, "Password is required"],
-    },
-    isAdmin: {
-      type: Boolean,
-      default: false, // Regular users are not admin by default
-    },
+    name:     { type: String, required: true, trim: true },
+    email:    { type: String, required: true, unique: true, lowercase: true, trim: true },
+    password: { type: String, required: true },
+    isAdmin:  { type: Boolean, default: false },
+    resetCode:       { type: String, default: "" },
+    resetCodeExpiry: { type: Date, default: null },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-// Prevent model recompilation in development
 const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
-
 export default User;

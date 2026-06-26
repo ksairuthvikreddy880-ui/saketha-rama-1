@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 
 const inputStyle: React.CSSProperties = {
@@ -18,12 +18,26 @@ const inputStyle: React.CSSProperties = {
   transition: "border-color 0.2s",
 };
 
+type Step = "signin" | "forgot-email" | "forgot-code" | "forgot-newpass" | "forgot-done";
+
 export default function SignInForm() {
   const router = useRouter();
+  const [step, setStep] = useState<Step>("signin");
+
+  // Sign in state
   const [form, setForm] = useState({ email: "", password: "", remember: false });
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
   const [loading, setLoading] = useState(false);
 
+  // Forgot password state
+  const [fpEmail, setFpEmail] = useState("");
+  const [fpCode, setFpCode] = useState("");
+  const [fpNewPass, setFpNewPass] = useState("");
+  const [fpConfirm, setFpConfirm] = useState("");
+  const [fpError, setFpError] = useState("");
+  const [fpLoading, setFpLoading] = useState(false);
+
+  // ── Sign In ──
   const validate = () => {
     const e: typeof errors = {};
     if (!form.email.trim()) e.email = "Email is required.";
@@ -32,59 +46,202 @@ export default function SignInForm() {
     return e;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     const v = validate();
     if (Object.keys(v).length > 0) { setErrors(v); return; }
-    
     setLoading(true);
     setErrors({});
-
     try {
-      const response = await fetch("/api/auth/signin", {
+      const res = await fetch("/api/auth/signin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: form.email,
-          password: form.password,
-        }),
+        body: JSON.stringify({ email: form.email, password: form.password }),
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setErrors({ general: data.error || "Failed to sign in" });
-        setLoading(false);
-        return;
-      }
-
-      // Check if admin login
+      const data = await res.json();
+      if (!res.ok) { setErrors({ general: data.error || "Failed to sign in" }); setLoading(false); return; }
       if (data.isAdmin) {
-        // Store admin session
         sessionStorage.setItem("admin_auth", "true");
-        // Redirect to admin panel
         router.push("/admin");
       } else {
-        // Store regular user session
         sessionStorage.setItem("user_auth", "true");
         sessionStorage.setItem("user_email", form.email);
         sessionStorage.setItem("user_name", data.user.name);
-        // Redirect to homepage
         router.push("/");
       }
-    } catch (error) {
+    } catch {
       setErrors({ general: "Network error. Please try again." });
       setLoading(false);
     }
   };
 
+  // ── Step 1: Send code ──
+  const handleSendCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!fpEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fpEmail)) {
+      setFpError("Enter a valid email address."); return;
+    }
+    setFpLoading(true); setFpError("");
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: fpEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setFpError(data.error || "Failed to send code."); setFpLoading(false); return; }
+      setStep("forgot-code");
+    } catch {
+      setFpError("Network error. Please try again.");
+    } finally {
+      setFpLoading(false);
+    }
+  };
+
+  // ── Step 2: Verify code ──
+  const handleVerifyCode = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (fpCode.trim().length !== 6) { setFpError("Enter the 6-digit code."); return; }
+    setFpError("");
+    setStep("forgot-newpass");
+  };
+
+  // ── Step 3: Reset password ──
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (fpNewPass.length < 6) { setFpError("Password must be at least 6 characters."); return; }
+    if (fpNewPass !== fpConfirm) { setFpError("Passwords do not match."); return; }
+    setFpLoading(true); setFpError("");
+    try {
+      const res = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: fpEmail, code: fpCode, newPassword: fpNewPass }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setFpError(data.error || "Failed to reset password."); setFpLoading(false); return; }
+      setStep("forgot-done");
+    } catch {
+      setFpError("Network error. Please try again.");
+    } finally {
+      setFpLoading(false);
+    }
+  };
+
+  const labelStyle: React.CSSProperties = { display: "block", fontFamily: "Georgia, serif", fontSize: "0.8rem", color: "#6b7280", marginBottom: "0.4rem" };
+  const errStyle: React.CSSProperties = { fontFamily: "Georgia, serif", fontSize: "0.75rem", color: "#dc2626", marginTop: "0.25rem" };
+
+  // ── Forgot password screens ──
+  if (step !== "signin") {
+    return (
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+
+        {/* Step: Enter email */}
+        {step === "forgot-email" && (
+          <form onSubmit={handleSendCode} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <div>
+              <h3 style={{ fontFamily: "Georgia, serif", fontSize: "1.1rem", fontWeight: "700", color: "#111827", marginBottom: "0.3rem" }}>Forgot Password</h3>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: "0.85rem", color: "#6B7280" }}>Enter your email and we'll send a 6-digit reset code.</p>
+            </div>
+            <div>
+              <label style={labelStyle}>Email</label>
+              <input type="email" value={fpEmail} onChange={e => { setFpEmail(e.target.value); setFpError(""); }} placeholder="you@example.com" style={inputStyle} autoFocus />
+            </div>
+            {fpError && <p style={errStyle}>{fpError}</p>}
+            <button type="submit" disabled={fpLoading} style={{ padding: "0.85rem", background: fpLoading ? "#94a3b8" : "linear-gradient(135deg,#0ea5e9,#6366f1)", border: "none", borderRadius: "8px", color: "#fff", fontFamily: "Georgia, serif", fontSize: "0.95rem", cursor: fpLoading ? "not-allowed" : "pointer" }}>
+              {fpLoading ? "Sending..." : "Send Reset Code"}
+            </button>
+            <button type="button" onClick={() => { setStep("signin"); setFpError(""); }} style={{ background: "none", border: "none", fontFamily: "Georgia, serif", fontSize: "0.85rem", color: "#6b7280", cursor: "pointer", textDecoration: "underline" }}>
+              Back to Sign In
+            </button>
+          </form>
+        )}
+
+        {/* Step: Enter code */}
+        {step === "forgot-code" && (
+          <form onSubmit={handleVerifyCode} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <div>
+              <h3 style={{ fontFamily: "Georgia, serif", fontSize: "1.1rem", fontWeight: "700", color: "#111827", marginBottom: "0.3rem" }}>Enter Code</h3>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: "0.85rem", color: "#6B7280" }}>
+                We sent a 6-digit code to <strong>{fpEmail}</strong>. Check your inbox (and spam folder).
+              </p>
+            </div>
+            <div>
+              <label style={labelStyle}>6-Digit Code</label>
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                value={fpCode}
+                onChange={e => { setFpCode(e.target.value.replace(/\D/g, "").slice(0, 6)); setFpError(""); }}
+                placeholder="123456"
+                style={{ ...inputStyle, fontSize: "1.5rem", letterSpacing: "0.4rem", textAlign: "center" }}
+                autoFocus
+              />
+            </div>
+            {fpError && <p style={errStyle}>{fpError}</p>}
+            <button type="submit" style={{ padding: "0.85rem", background: "linear-gradient(135deg,#0ea5e9,#6366f1)", border: "none", borderRadius: "8px", color: "#fff", fontFamily: "Georgia, serif", fontSize: "0.95rem", cursor: "pointer" }}>
+              Verify Code
+            </button>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <button type="button" onClick={() => { setStep("forgot-email"); setFpCode(""); setFpError(""); }} style={{ background: "none", border: "none", fontFamily: "Georgia, serif", fontSize: "0.8rem", color: "#6b7280", cursor: "pointer", textDecoration: "underline" }}>
+                Resend code
+              </button>
+              <button type="button" onClick={() => { setStep("signin"); setFpError(""); }} style={{ background: "none", border: "none", fontFamily: "Georgia, serif", fontSize: "0.8rem", color: "#6b7280", cursor: "pointer", textDecoration: "underline" }}>
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* Step: New password */}
+        {step === "forgot-newpass" && (
+          <form onSubmit={handleResetPassword} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <div>
+              <h3 style={{ fontFamily: "Georgia, serif", fontSize: "1.1rem", fontWeight: "700", color: "#111827", marginBottom: "0.3rem" }}>Set New Password</h3>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: "0.85rem", color: "#6B7280" }}>Choose a strong password for your account.</p>
+            </div>
+            <div>
+              <label style={labelStyle}>New Password</label>
+              <input type="password" value={fpNewPass} onChange={e => { setFpNewPass(e.target.value); setFpError(""); }} placeholder="Minimum 6 characters" style={inputStyle} autoFocus />
+            </div>
+            <div>
+              <label style={labelStyle}>Confirm Password</label>
+              <input type="password" value={fpConfirm} onChange={e => { setFpConfirm(e.target.value); setFpError(""); }} placeholder="Re-enter password" style={inputStyle} />
+            </div>
+            {fpError && <p style={errStyle}>{fpError}</p>}
+            <button type="submit" disabled={fpLoading} style={{ padding: "0.85rem", background: fpLoading ? "#94a3b8" : "linear-gradient(135deg,#0ea5e9,#6366f1)", border: "none", borderRadius: "8px", color: "#fff", fontFamily: "Georgia, serif", fontSize: "0.95rem", cursor: fpLoading ? "not-allowed" : "pointer" }}>
+              {fpLoading ? "Saving..." : "Reset Password"}
+            </button>
+          </form>
+        )}
+
+        {/* Step: Done */}
+        {step === "forgot-done" && (
+          <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: "1rem", padding: "1rem 0" }}>
+            <div style={{ fontSize: "3rem" }}>✓</div>
+            <h3 style={{ fontFamily: "Georgia, serif", fontSize: "1.1rem", fontWeight: "700", color: "#111827" }}>Password Reset!</h3>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: "0.9rem", color: "#6B7280" }}>Your password has been updated successfully. You can now sign in.</p>
+            <button
+              onClick={() => { setStep("signin"); setFpEmail(""); setFpCode(""); setFpNewPass(""); setFpConfirm(""); setFpError(""); }}
+              style={{ padding: "0.85rem", background: "linear-gradient(135deg,#0ea5e9,#6366f1)", border: "none", borderRadius: "8px", color: "#fff", fontFamily: "Georgia, serif", fontSize: "0.95rem", cursor: "pointer" }}
+            >
+              Back to Sign In
+            </button>
+          </div>
+        )}
+      </motion.div>
+    );
+  }
+
+  // ── Main Sign In form ──
   return (
     <motion.form
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
       transition={{ duration: 0.3 }}
-      onSubmit={handleSubmit}
+      onSubmit={handleSignIn}
       noValidate
       style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}
     >
@@ -95,42 +252,29 @@ export default function SignInForm() {
       )}
 
       <div>
-        <label style={{ display: "block", fontFamily: "Georgia, serif", fontSize: "0.8rem", color: "#6b7280", marginBottom: "0.4rem" }}>Email</label>
-        <input
-          type="email"
-          value={form.email}
-          onChange={e => { setForm(p => ({ ...p, email: e.target.value })); setErrors(p => ({ ...p, email: undefined })); }}
-          placeholder="you@example.com"
-          style={{ ...inputStyle, borderColor: errors.email ? "#f87171" : "#e2e8f0" }}
-          autoComplete="email"
-        />
-        {errors.email && <p style={{ fontFamily: "Georgia, serif", fontSize: "0.75rem", color: "#dc2626", marginTop: "0.25rem" }}>{errors.email}</p>}
+        <label style={labelStyle}>Email</label>
+        <input type="email" value={form.email} onChange={e => { setForm(p => ({ ...p, email: e.target.value })); setErrors(p => ({ ...p, email: undefined })); }} placeholder="you@example.com" style={{ ...inputStyle, borderColor: errors.email ? "#f87171" : "#e2e8f0" }} autoComplete="email" />
+        {errors.email && <p style={errStyle}>{errors.email}</p>}
       </div>
 
       <div>
-        <label style={{ display: "block", fontFamily: "Georgia, serif", fontSize: "0.8rem", color: "#6b7280", marginBottom: "0.4rem" }}>Password</label>
-        <input
-          type="password"
-          value={form.password}
-          onChange={e => { setForm(p => ({ ...p, password: e.target.value })); setErrors(p => ({ ...p, password: undefined })); }}
-          placeholder="••••••••"
-          style={{ ...inputStyle, borderColor: errors.password ? "#f87171" : "#e2e8f0" }}
-          autoComplete="current-password"
-        />
-        {errors.password && <p style={{ fontFamily: "Georgia, serif", fontSize: "0.75rem", color: "#dc2626", marginTop: "0.25rem" }}>{errors.password}</p>}
+        <label style={labelStyle}>Password</label>
+        <input type="password" value={form.password} onChange={e => { setForm(p => ({ ...p, password: e.target.value })); setErrors(p => ({ ...p, password: undefined })); }} placeholder="••••••••" style={{ ...inputStyle, borderColor: errors.password ? "#f87171" : "#e2e8f0" }} autoComplete="current-password" />
+        {errors.password && <p style={errStyle}>{errors.password}</p>}
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
-          <input
-            type="checkbox"
-            checked={form.remember}
-            onChange={e => setForm(p => ({ ...p, remember: e.target.checked }))}
-            style={{ accentColor: "#38bdf8", width: "14px", height: "14px" }}
-          />
+          <input type="checkbox" checked={form.remember} onChange={e => setForm(p => ({ ...p, remember: e.target.checked }))} style={{ accentColor: "#38bdf8", width: "14px", height: "14px" }} />
           <span style={{ fontFamily: "Georgia, serif", fontSize: "0.8rem", color: "#6b7280" }}>Remember me</span>
         </label>
-        <a href="#" style={{ fontFamily: "Georgia, serif", fontSize: "0.8rem", color: "#38bdf8", textDecoration: "none" }}>Forgot password?</a>
+        <button
+          type="button"
+          onClick={() => { setFpEmail(form.email); setStep("forgot-email"); setFpError(""); }}
+          style={{ background: "none", border: "none", fontFamily: "Georgia, serif", fontSize: "0.8rem", color: "#38bdf8", cursor: "pointer", padding: 0 }}
+        >
+          Forgot password?
+        </button>
       </div>
 
       <motion.button
@@ -138,20 +282,7 @@ export default function SignInForm() {
         disabled={loading}
         whileHover={{ scale: loading ? 1 : 1.01 }}
         whileTap={{ scale: loading ? 1 : 0.99 }}
-        style={{
-          width: "100%",
-          padding: "0.85rem",
-          background: loading ? "#94a3b8" : "linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)",
-          border: "none",
-          borderRadius: "8px",
-          color: "#ffffff",
-          fontFamily: "Georgia, serif",
-          fontSize: "0.95rem",
-          letterSpacing: "0.05em",
-          cursor: loading ? "not-allowed" : "pointer",
-          transition: "opacity 0.2s",
-          marginTop: "0.25rem",
-        }}
+        style={{ width: "100%", padding: "0.85rem", background: loading ? "#94a3b8" : "linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)", border: "none", borderRadius: "8px", color: "#ffffff", fontFamily: "Georgia, serif", fontSize: "0.95rem", letterSpacing: "0.05em", cursor: loading ? "not-allowed" : "pointer", marginTop: "0.25rem" }}
       >
         {loading ? "Signing in..." : "Sign In"}
       </motion.button>
