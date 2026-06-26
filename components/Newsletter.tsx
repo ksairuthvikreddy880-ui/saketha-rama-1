@@ -2,19 +2,20 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 export default function Newsletter() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
-  const [subscribed, setSubscribed] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) { setError("Please enter your email."); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError("Enter a valid email address."); return; }
     setError("");
-    // Connect to your email service / API route here
-    setSubscribed(true);
+    // Redirect to sign up page with email pre-filled in query
+    router.push(`/auth?email=${encodeURIComponent(email)}&mode=signup`);
   };
 
   return (
@@ -58,11 +59,7 @@ export default function Newsletter() {
           Sign up to hear from us about specials, sales, and events.
         </motion.p>
 
-        {subscribed ? (
-          <div style={{ fontFamily: "Georgia, serif", color: "#555", padding: "1rem 0" }}>
-            <p>Thank you for subscribing!</p>
-          </div>
-        ) : (
+        {/* Form */}
           <form onSubmit={handleSubmit} noValidate>
             <div
               style={{
@@ -134,7 +131,6 @@ export default function Newsletter() {
               </p>
             )}
           </form>
-        )}
       </div>
     </section>
   );
