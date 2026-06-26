@@ -31,11 +31,24 @@ export async function POST(request: NextRequest) {
     );
 
     // Send email with code
+    const gmailUser = process.env.GMAIL_USER;
+    const gmailPass = process.env.GMAIL_PASS;
+
+    if (!gmailUser || !gmailPass || gmailPass === "your-app-password-here") {
+      // Email not configured — still return the code in dev mode for testing
+      console.log(`[DEV] Password reset code for ${email}: ${code}`);
+      return NextResponse.json({
+        success: true,
+        message: "Reset code sent. (Check server console in dev mode)",
+        devCode: process.env.NODE_ENV === "development" ? code : undefined,
+      });
+    }
+
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_PASS,
+        user: gmailUser,
+        pass: gmailPass,
       },
     });
 

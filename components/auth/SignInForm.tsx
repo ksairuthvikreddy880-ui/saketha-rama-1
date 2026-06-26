@@ -90,6 +90,8 @@ export default function SignInForm() {
       });
       const data = await res.json();
       if (!res.ok) { setFpError(data.error || "Failed to send code."); setFpLoading(false); return; }
+      // In dev mode, auto-fill the code if returned
+      if (data.devCode) setFpCode(data.devCode);
       setStep("forgot-code");
     } catch {
       setFpError("Network error. Please try again.");
@@ -165,6 +167,11 @@ export default function SignInForm() {
               <p style={{ fontFamily: "Georgia, serif", fontSize: "0.85rem", color: "#6B7280" }}>
                 We sent a 6-digit code to <strong>{fpEmail}</strong>. Check your inbox (and spam folder).
               </p>
+              {fpCode && (
+                <p style={{ fontFamily: "system-ui", fontSize: "0.75rem", color: "#f59e0b", marginTop: "0.4rem", backgroundColor: "#FEF3C7", padding: "0.4rem 0.6rem", borderRadius: "4px" }}>
+                  Dev mode: code auto-filled — {fpCode}
+                </p>
+              )}
             </div>
             <div>
               <label style={labelStyle}>6-Digit Code</label>
