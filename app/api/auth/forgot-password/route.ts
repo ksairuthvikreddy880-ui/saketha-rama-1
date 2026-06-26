@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
 
     const user = await User.findOne({ email: email.toLowerCase() });
 
-    // Always return success to prevent email enumeration attacks
+    // Always return success to prevent email enumeration
     if (!user) {
       return NextResponse.json({ success: true, message: "If that email exists, a code has been sent." });
     }
@@ -30,25 +30,12 @@ export async function POST(request: NextRequest) {
       { $set: { resetCode: code, resetCodeExpiry: expiry } }
     );
 
-    // Send email with code
-    const gmailUser = process.env.GMAIL_USER;
-    const gmailPass = process.env.GMAIL_PASS;
-
-    if (!gmailUser || !gmailPass || gmailPass === "your-app-password-here") {
-      // Email not configured — still return the code in dev mode for testing
-      console.log(`[DEV] Password reset code for ${email}: ${code}`);
-      return NextResponse.json({
-        success: true,
-        message: "Reset code sent. (Check server console in dev mode)",
-        devCode: process.env.NODE_ENV === "development" ? code : undefined,
-      });
-    }
-
+    // Send email
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: gmailUser,
-        pass: gmailPass,
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASS,
       },
     });
 
@@ -60,20 +47,19 @@ export async function POST(request: NextRequest) {
         <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 2rem; border: 1px solid #eee; border-radius: 8px;">
           <h2 style="color: #111827; margin-bottom: 0.5rem;">Password Reset</h2>
           <p style="color: #555; line-height: 1.7; margin-bottom: 1.5rem;">
-            We received a request to reset your password for your SRI account.
+            We received a request to reset your SRI account password.
             Use the code below — it expires in <strong>15 minutes</strong>.
           </p>
-          <div style="background: #F8FAFC; border: 1px solid #E5E7EB; border-radius: 8px; padding: 1.5rem; text-align: center; margin-bottom: 1.5rem;">
-            <p style="font-size: 2.5rem; font-weight: 700; letter-spacing: 0.5rem; color: #111827; margin: 0;">
+          <div style="background: #F8FAFC; border: 2px solid #E5E7EB; border-radius: 8px; padding: 1.5rem; text-align: center; margin-bottom: 1.5rem;">
+            <p style="font-size: 2.5rem; font-weight: 700; letter-spacing: 0.5rem; color: #111827; margin: 0; font-family: monospace;">
               ${code}
             </p>
           </div>
           <p style="color: #888; font-size: 0.85rem; line-height: 1.6;">
-            If you did not request a password reset, you can safely ignore this email.
-            Your password will not be changed.
+            If you did not request a password reset, ignore this email — your password will not be changed.
           </p>
           <hr style="border: none; border-top: 1px solid #eee; margin: 1.5rem 0;" />
-          <p style="color: #aaa; font-size: 0.75rem;">Sri Saketha Rama Innovations</p>
+          <p style="color: #aaa; font-size: 0.75rem;">Sri Saketha Rama Innovations · saketharamainnovations@gmail.com</p>
         </div>
       `,
     });
@@ -81,6 +67,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, message: "Reset code sent to your email." });
   } catch (error: any) {
     console.error("Forgot password error:", error);
-    return NextResponse.json({ error: "Failed to send reset code. Please try again." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to send reset code. Please try again later." },
+      { status: 500 }
+    );
   }
 }
