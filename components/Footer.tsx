@@ -139,7 +139,7 @@ export default function Footer() {
 
           {/* Center content */}
           <div className="footer-center">
-            <a href="#privacy" style={{ display: "block", fontFamily: "Georgia, serif", fontSize: "0.7rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "#cccccc", textDecoration: "none", marginBottom: "1rem" }}>
+            <a href="/privacy-policy" style={{ display: "block", fontFamily: "Georgia, serif", fontSize: "0.7rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "#cccccc", textDecoration: "none", marginBottom: "1rem" }}>
               PRIVACY POLICY
             </a>
 

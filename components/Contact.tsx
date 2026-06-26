@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 interface FormState {
   name: string;
@@ -228,6 +229,12 @@ export default function Contact() {
 
             <p style={{ textAlign: "center", fontFamily: "Georgia, serif", fontSize: "0.75rem", color: "#888888", marginTop: "0.5rem" }}>
               Supported: PDF, DOC, DOCX, PNG, JPG, GIF, WEBP, TXT, ZIP, XLS, PPT (max 5MB)
+            </p>
+            <p style={{ textAlign: "center", fontFamily: "Georgia, serif", fontSize: "0.75rem", color: "#888888", marginTop: "0.4rem" }}>
+              By submitting, you agree to our{" "}
+              <Link href="/privacy-policy" style={{ color: "#4a9ea1", textDecoration: "none" }}>Privacy Policy</Link>
+              {" "}and{" "}
+              <Link href="/terms" style={{ color: "#4a9ea1", textDecoration: "none" }}>Terms of Service</Link>.
             </p>
           </form>
         )}
