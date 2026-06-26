@@ -182,43 +182,74 @@ export default function MailsPage() {
                   </div>
 
                   {/* Attachment */}
-                  {selected.attachmentBase64 && selected.attachmentName && (
+                  {selected.attachmentBase64 && selected.attachmentName && selected.attachmentBase64.length > 100 && (
                     <div style={{ marginTop: "1.5rem", paddingTop: "1.25rem", borderTop: "1px solid #E5E7EB" }}>
                       <p style={{ fontFamily: "system-ui", fontSize: "0.75rem", fontWeight: "600", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.75rem" }}>
-                        Attachment
+                        Attachment — {selected.attachmentName}
                       </p>
 
                       {/* Image preview */}
-                      {selected.attachmentType?.startsWith("image/") ? (
+                      {selected.attachmentType?.startsWith("image/") && (
                         <div>
                           <img
                             src={selected.attachmentBase64}
                             alt={selected.attachmentName}
-                            style={{ maxWidth: "100%", maxHeight: "400px", borderRadius: "8px", border: "1px solid #E5E7EB", objectFit: "contain" }}
+                            style={{ maxWidth: "100%", maxHeight: "400px", borderRadius: "8px", border: "1px solid #E5E7EB", objectFit: "contain", display: "block" }}
+                          />
+                          <div style={{ marginTop: "0.75rem", display: "flex", gap: "0.6rem" }}>
+                            <a
+                              href={selected.attachmentBase64}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", padding: "0.4rem 0.875rem", backgroundColor: "#F8FAFC", border: "1px solid #E5E7EB", borderRadius: "6px", fontFamily: "system-ui", fontSize: "0.8rem", color: "#374151", textDecoration: "none" }}
+                            >
+                              🔍 Preview
+                            </a>
+                            <a
+                              href={selected.attachmentBase64}
+                              download={selected.attachmentName}
+                              style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", padding: "0.4rem 0.875rem", backgroundColor: "#111827", border: "none", borderRadius: "6px", fontFamily: "system-ui", fontSize: "0.8rem", color: "#fff", textDecoration: "none" }}
+                            >
+                              ↓ Download
+                            </a>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* PDF preview */}
+                      {selected.attachmentType === "application/pdf" && (
+                        <div>
+                          <iframe
+                            src={selected.attachmentBase64}
+                            style={{ width: "100%", height: "500px", border: "1px solid #E5E7EB", borderRadius: "8px" }}
+                            title={selected.attachmentName}
                           />
                           <div style={{ marginTop: "0.75rem" }}>
                             <a
                               href={selected.attachmentBase64}
                               download={selected.attachmentName}
-                              style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", padding: "0.4rem 0.875rem", backgroundColor: "#F8FAFC", border: "1px solid #E5E7EB", borderRadius: "6px", fontFamily: "system-ui", fontSize: "0.8rem", color: "#374151", textDecoration: "none" }}
+                              style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", padding: "0.5rem 1rem", backgroundColor: "#111827", border: "none", borderRadius: "6px", fontFamily: "system-ui", fontSize: "0.8rem", color: "#fff", textDecoration: "none" }}
                             >
-                              ↓ Download {selected.attachmentName}
+                              ↓ Download PDF
                             </a>
                           </div>
                         </div>
-                      ) : (
-                        /* Non-image file — download link */
-                        <a
-                          href={selected.attachmentBase64}
-                          download={selected.attachmentName}
-                          style={{ display: "inline-flex", alignItems: "center", gap: "0.6rem", padding: "0.75rem 1.25rem", backgroundColor: "#F8FAFC", border: "1px solid #E5E7EB", borderRadius: "8px", fontFamily: "system-ui", fontSize: "0.875rem", color: "#111827", textDecoration: "none" }}
-                        >
-                          <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                          </svg>
-                          {selected.attachmentName}
-                          <span style={{ color: "#6B7280", fontSize: "0.75rem" }}>— click to download</span>
-                        </a>
+                      )}
+
+                      {/* Other file types */}
+                      {!selected.attachmentType?.startsWith("image/") && selected.attachmentType !== "application/pdf" && (
+                        <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
+                          <a
+                            href={selected.attachmentBase64}
+                            download={selected.attachmentName}
+                            style={{ display: "inline-flex", alignItems: "center", gap: "0.6rem", padding: "0.75rem 1.25rem", backgroundColor: "#111827", border: "none", borderRadius: "8px", fontFamily: "system-ui", fontSize: "0.875rem", color: "#fff", textDecoration: "none" }}
+                          >
+                            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Download {selected.attachmentName}
+                          </a>
+                        </div>
                       )}
                     </div>
                   )}
