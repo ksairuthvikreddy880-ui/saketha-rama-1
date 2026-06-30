@@ -145,7 +145,7 @@ export default function SignInForm() {
             </div>
             <div>
               <label style={labelStyle}>Email</label>
-              <input type="email" value={fpEmail} onChange={e => { setFpEmail(e.target.value); setFpError(""); }} placeholder="you@example.com" style={inputStyle} autoFocus />
+              <input type="email" value={fpEmail} onChange={e => { setFpEmail(e.target.value); setFpError(""); }} placeholder="" style={inputStyle} autoFocus />
             </div>
             {fpError && <p style={errStyle}>{fpError}</p>}
             <button type="submit" disabled={fpLoading} style={{ padding: "0.85rem", background: fpLoading ? "#94a3b8" : "linear-gradient(135deg,#0ea5e9,#6366f1)", border: "none", borderRadius: "8px", color: "#fff", fontFamily: "Georgia, serif", fontSize: "0.95rem", cursor: fpLoading ? "not-allowed" : "pointer" }}>
@@ -203,11 +203,11 @@ export default function SignInForm() {
             </div>
             <div>
               <label style={labelStyle}>New Password</label>
-              <input type="password" value={fpNewPass} onChange={e => { setFpNewPass(e.target.value); setFpError(""); }} placeholder="Minimum 6 characters" style={inputStyle} autoFocus />
+              <input type="password" value={fpNewPass} onChange={e => { setFpNewPass(e.target.value); setFpError(""); }} placeholder="" style={inputStyle} autoFocus />
             </div>
             <div>
               <label style={labelStyle}>Confirm Password</label>
-              <input type="password" value={fpConfirm} onChange={e => { setFpConfirm(e.target.value); setFpError(""); }} placeholder="Re-enter password" style={inputStyle} />
+              <input type="password" value={fpConfirm} onChange={e => { setFpConfirm(e.target.value); setFpError(""); }} placeholder="" style={inputStyle} />
             </div>
             {fpError && <p style={errStyle}>{fpError}</p>}
             <button type="submit" disabled={fpLoading} style={{ padding: "0.85rem", background: fpLoading ? "#94a3b8" : "linear-gradient(135deg,#0ea5e9,#6366f1)", border: "none", borderRadius: "8px", color: "#fff", fontFamily: "Georgia, serif", fontSize: "0.95rem", cursor: fpLoading ? "not-allowed" : "pointer" }}>
@@ -253,13 +253,13 @@ export default function SignInForm() {
 
       <div>
         <label style={labelStyle}>Email</label>
-        <input type="email" value={form.email} onChange={e => { setForm(p => ({ ...p, email: e.target.value })); setErrors(p => ({ ...p, email: undefined })); }} placeholder="you@example.com" style={{ ...inputStyle, borderColor: errors.email ? "#f87171" : "#e2e8f0" }} autoComplete="email" />
+        <input type="email" value={form.email} onChange={e => { setForm(p => ({ ...p, email: e.target.value })); setErrors(p => ({ ...p, email: undefined })); }} placeholder="" style={{ ...inputStyle, borderColor: errors.email ? "#f87171" : "#e2e8f0" }} autoComplete="email" />
         {errors.email && <p style={errStyle}>{errors.email}</p>}
       </div>
 
       <div>
         <label style={labelStyle}>Password</label>
-        <input type="password" value={form.password} onChange={e => { setForm(p => ({ ...p, password: e.target.value })); setErrors(p => ({ ...p, password: undefined })); }} placeholder="••••••••" style={{ ...inputStyle, borderColor: errors.password ? "#f87171" : "#e2e8f0" }} autoComplete="current-password" />
+        <input type="password" value={form.password} onChange={e => { setForm(p => ({ ...p, password: e.target.value })); setErrors(p => ({ ...p, password: undefined })); }} placeholder="" style={{ ...inputStyle, borderColor: errors.password ? "#f87171" : "#e2e8f0" }} autoComplete="current-password" />
         {errors.password && <p style={errStyle}>{errors.password}</p>}
       </div>
 

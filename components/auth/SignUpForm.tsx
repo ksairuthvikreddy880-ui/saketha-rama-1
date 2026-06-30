@@ -123,10 +123,10 @@ export default function SignUpForm() {
       )}
 
       {[
-        { key: "name", label: "Full Name", type: "text", placeholder: "John Smith", autoComplete: "name" },
-        { key: "email", label: "Email", type: "email", placeholder: "you@example.com", autoComplete: "email" },
-        { key: "password", label: "Password", type: "password", placeholder: "Min. 8 characters", autoComplete: "new-password" },
-        { key: "confirm", label: "Confirm Password", type: "password", placeholder: "••••••••", autoComplete: "new-password" },
+        { key: "name", label: "Full Name", type: "text", placeholder: "", autoComplete: "name" },
+        { key: "email", label: "Email", type: "email", placeholder: "", autoComplete: "email" },
+        { key: "password", label: "Password", type: "password", placeholder: "", autoComplete: "new-password" },
+        { key: "confirm", label: "Confirm Password", type: "password", placeholder: "", autoComplete: "new-password" },
       ].map(({ key, label, type, placeholder, autoComplete }) => (
         <div key={key}>
           <label style={{ display: "block", fontFamily: "Georgia, serif", fontSize: "0.8rem", color: "#6b7280", marginBottom: "0.4rem" }}>{label}</label>
