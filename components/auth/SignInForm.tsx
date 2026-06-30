@@ -295,18 +295,11 @@ export default function SignInForm() {
         {errors.password && <p style={errStyle}>{errors.password}</p>}
       </div>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
         <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
           <input type="checkbox" checked={form.remember} onChange={e => setForm(p => ({ ...p, remember: e.target.checked }))} style={{ accentColor: "#38bdf8", width: "14px", height: "14px" }} />
           <span style={{ fontFamily: "Georgia, serif", fontSize: "0.8rem", color: "#6b7280" }}>Remember me</span>
         </label>
-        <button
-          type="button"
-          onClick={() => { setFpEmail(form.email); setStep("forgot-email"); setFpError(""); }}
-          style={{ background: "none", border: "none", fontFamily: "Georgia, serif", fontSize: "0.8rem", color: "#38bdf8", cursor: "pointer", padding: 0 }}
-        >
-          Forgot password?
-        </button>
       </div>
 
       <motion.button
