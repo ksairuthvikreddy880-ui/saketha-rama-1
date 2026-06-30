@@ -69,8 +69,8 @@ export default function SignInForm() {
         sessionStorage.setItem("user_name", data.user.name);
         router.push("/");
       }
-    } catch {
-      setErrors({ general: "Network error. Please try again." });
+    } catch (err: any) {
+      setErrors({ general: err?.message || "Network error. Please check your connection." });
       setLoading(false);
     }
   };
