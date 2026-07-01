@@ -28,11 +28,16 @@ export const metadata: Metadata = {
     "machine learning",
     "cloud services",
   ],
+  icons: {
+    icon: "/assets/logo.jpg",
+    apple: "/assets/logo.jpg",
+  },
   openGraph: {
     title: "SRI — Advanced AI & Web 4.0 Solutions",
     description:
       "Sri Saketha Rama Technologies — Pioneering advanced AI and Web 4.0 solutions.",
     type: "website",
+    images: ["/assets/logo.jpg"],
   },
 };
 
