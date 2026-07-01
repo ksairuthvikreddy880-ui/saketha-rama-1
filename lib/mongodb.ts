@@ -15,7 +15,6 @@ declare global {
   var mongoose: MongooseCache | undefined;
 }
 
-// Reset cache on each cold start to avoid using stale connection
 let cached: MongooseCache = global.mongoose || { conn: null, promise: null };
 
 if (!global.mongoose) {
@@ -23,21 +22,34 @@ if (!global.mongoose) {
 }
 
 export async function connectDB() {
-  if (cached.conn) {
+  // Return existing connection if healthy
+  if (cached.conn && mongoose.connection.readyState === 1) {
     return cached.conn;
+  }
+
+  // Reset if connection dropped
+  if (mongoose.connection.readyState === 0 || mongoose.connection.readyState === 3) {
+    cached.conn = null;
+    cached.promise = null;
   }
 
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-      serverSelectionTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 15000,
+      connectTimeoutMS: 15000,
       socketTimeoutMS: 45000,
+      maxPoolSize: 10,
     };
 
     cached.promise = mongoose
       .connect(MONGODB_URI, opts)
-      .then((m) => m)
+      .then((m) => {
+        console.log("MongoDB connected successfully");
+        return m;
+      })
       .catch((err) => {
+        console.error("MongoDB connection error:", err.message);
         cached.promise = null;
         throw err;
       });

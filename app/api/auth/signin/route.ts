@@ -62,10 +62,11 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error: any) {
-    console.error("Signin error:", error);
-    return NextResponse.json(
-      { error: "Failed to sign in. Please try again." },
-      { status: 500 }
-    );
+    console.error("Signin error:", error?.message || error);
+    // Return specific error for debugging
+    const message = error?.message?.includes("ECONNREFUSED") || error?.message?.includes("querySrv")
+      ? "Database connection failed. Please try again in a moment."
+      : "Failed to sign in. Please try again.";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
